@@ -35,7 +35,7 @@ class ShowImagesViewModel : ViewModel() {
                         val newImages = response.data.flatMap { imageData ->
                             imageData.images.filter { image ->
                                 Constants.RETROFIT.IMAGE_EXTENSIONS.any { ext -> image.link.endsWith(ext) } &&
-                                        !existingImageIds.contains(image.id) // Verifica se a imagem já existe
+                                        !existingImageIds.contains(image.id)
                             }
                         }
 

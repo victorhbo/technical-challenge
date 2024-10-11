@@ -98,41 +98,12 @@ class ShowImagesActivity : AppCompatActivity() {
         }
     }
 
-//    private fun initRecycler() {
-//        val gridLayoutManager = GridLayoutManager(this, 4)
-//        binding.recyclerView.layoutManager = gridLayoutManager
-//        binding.recyclerView.adapter = adapter
-//
-//        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-//            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-//                super.onScrolled(recyclerView, dx, dy)
-//
-//                if (dy > 0) {
-//                    val totalItemCount = gridLayoutManager.itemCount
-//                    val lastVisibleItemPosition = gridLayoutManager.findLastVisibleItemPosition()
-//
-//                    if (!isLoading && totalItemCount <= (lastVisibleItemPosition + 5)) {
-//                        isLoading = true
-//                        currentPage++
-//                        fetchImages()
-//                    }
-//                }
-//            }
-//        })
-//
-//    }
-
     private fun initRecycler() {
         val displayMetrics = Resources.getSystem().displayMetrics
-        val screenWidth = displayMetrics.widthPixels // Largura da tela em pixels
-
-        // Defina a largura desejada para cada item em pixels
-        val desiredItemWidth = resources.getDimensionPixelSize(R.dimen.item_width) // Defina isso no seu arquivo dimens.xml
-
-        // Calcule o número de colunas
+        val screenWidth = displayMetrics.widthPixels
+        val desiredItemWidth = resources.getDimensionPixelSize(R.dimen.item_width)
         val numberOfColumns = screenWidth / desiredItemWidth
 
-        // Crie o GridLayoutManager com o número calculado de colunas
         val gridLayoutManager = GridLayoutManager(this, numberOfColumns)
         binding.recyclerView.layoutManager = gridLayoutManager
         binding.recyclerView.adapter = adapter
