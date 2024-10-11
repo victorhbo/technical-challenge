@@ -14,6 +14,8 @@ import com.victorhbo.technicalchallengecatspictures.R
 import com.victorhbo.technicalchallengecatspictures.adapters.ImageAdapter
 import com.victorhbo.technicalchallengecatspictures.databinding.ActivityShowImagesBinding
 import com.victorhbo.technicalchallengecatspictures.retrofit.viewmodels.ShowImagesViewModel
+import com.victorhbo.technicalchallengecatspictures.utils.AlertDialogUtil
+import com.victorhbo.technicalchallengecatspictures.utils.NetworkUtil
 import com.victorhbo.technicalchallengecatspictures.utils.ProgressDialog
 
 class ShowImagesActivity : AppCompatActivity() {
@@ -51,7 +53,7 @@ class ShowImagesActivity : AppCompatActivity() {
 
     private fun initListeners() {
         binding.btnReloadImages.setOnClickListener {
-            enableDisableButton(false)
+
             fetchImages()
         }
 
@@ -74,8 +76,9 @@ class ShowImagesActivity : AppCompatActivity() {
 
         viewModel.timeoutOccurred.observe(this) { hasTimedOut ->
             if (hasTimedOut) {
-                showTimeoutDialog()
                 ProgressDialog.dismiss()
+                AlertDialogUtil.showErrorAlertDialog(this,
+                    getString(R.string.timeout_message))
                 enableDisableButton(true)
             }
         }
@@ -87,8 +90,14 @@ class ShowImagesActivity : AppCompatActivity() {
     }
 
     private fun fetchImages() {
-        ProgressDialog.show(this)
-        viewModel.fetchImages()
+        if (NetworkUtil.isInternetAvailable(this)) {
+            enableDisableButton(false)
+            ProgressDialog.show(this)
+            viewModel.fetchImages()
+        } else {
+            AlertDialogUtil.showErrorAlertDialog(this,
+                getString(R.string.check_your_internet))
+        }
     }
 
 
@@ -96,14 +105,4 @@ class ShowImagesActivity : AppCompatActivity() {
         binding.btnReloadImages.isEnabled = isEnabled
         binding.btnReloadImages.alpha = alpha
     }
-
-    private fun showTimeoutDialog() {
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.error))
-            .setMessage(getString(R.string.timeout_message))
-            .setPositiveButton(getString(R.string.ok)) { dialog, _ -> dialog.dismiss() }
-            .setCancelable(false)
-            .show()
-    }
-
 }

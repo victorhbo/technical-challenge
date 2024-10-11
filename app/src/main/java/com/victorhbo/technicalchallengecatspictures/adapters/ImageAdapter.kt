@@ -12,7 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import com.victorhbo.technicalchallengecatspictures.R
 import com.victorhbo.technicalchallengecatspictures.models.Image
+import com.victorhbo.technicalchallengecatspictures.utils.AlertDialogUtil
 import com.victorhbo.technicalchallengecatspictures.utils.Constants
+import com.victorhbo.technicalchallengecatspictures.utils.NetworkUtil
 import com.victorhbo.technicalchallengecatspictures.views.ImageDetailActivity
 
 class ImageAdapter : ListAdapter<Image, ImageAdapter.ImageViewHolder>(ImageDiffCallback()) {
@@ -25,10 +27,15 @@ class ImageAdapter : ListAdapter<Image, ImageAdapter.ImageViewHolder>(ImageDiffC
 
             val context = itemView.context
             itemView.setOnClickListener {
-                val intent = Intent(context, ImageDetailActivity::class.java).apply {
-                    putExtra(Constants.EXTRAS_NAME, image.link)
+                if (NetworkUtil.isInternetAvailable(context)) {
+                    val intent = Intent(context, ImageDetailActivity::class.java).apply {
+                        putExtra(Constants.EXTRAS_NAME, image.link)
+                    }
+                    context.startActivity(intent)
+                } else {
+                    AlertDialogUtil.showErrorAlertDialog(context,
+                        context.getString(R.string.check_your_internet))
                 }
-                context.startActivity(intent)
             }
         }
     }
