@@ -1,7 +1,6 @@
 package com.victorhbo.technicalchallengecatspictures.adapters
 
 import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +8,7 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import com.victorhbo.technicalchallengecatspictures.R
 import com.victorhbo.technicalchallengecatspictures.models.Image
 import com.victorhbo.technicalchallengecatspictures.utils.AlertDialogUtil
@@ -23,13 +22,15 @@ class ImageAdapter : ListAdapter<Image, ImageAdapter.ImageViewHolder>(ImageDiffC
         private val imageView: ImageView = itemView.findViewById(R.id.imageView)
 
         fun bind(image: Image) {
-            Picasso.get().load(image.link).into(imageView)
+            Glide.with(itemView.context)
+                .load(image.link)
+                .into(imageView)
 
             val context = itemView.context
             itemView.setOnClickListener {
                 if (NetworkUtil.isInternetAvailable(context)) {
                     val intent = Intent(context, ImageDetailActivity::class.java).apply {
-                        putExtra(Constants.EXTRAS_NAME, image.link)
+                        putExtra(Constants.EXTRAS.NAME, image.link)
                     }
                     context.startActivity(intent)
                 } else {

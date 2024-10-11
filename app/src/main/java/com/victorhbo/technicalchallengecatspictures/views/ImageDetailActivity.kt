@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import com.victorhbo.technicalchallengecatspictures.databinding.ActivityImageDetailBinding
 import com.victorhbo.technicalchallengecatspictures.utils.Constants
 
@@ -51,7 +51,7 @@ class ImageDetailActivity : AppCompatActivity() {
     }
 
     private fun loadImage() {
-        val imageUrl = intent.getStringExtra(Constants.EXTRAS_NAME)
+        val imageUrl = intent.getStringExtra(Constants.EXTRAS.NAME)
         binding.tvDetailNome.text = imageUrl.toString()
         if (imageUrl != null) {
             adjustImageSize(binding.ivDetails, imageUrl)
@@ -59,9 +59,9 @@ class ImageDetailActivity : AppCompatActivity() {
     }
 
     private fun adjustImageSize(imageView: ImageView, imageUrl: String) {
-        Picasso.get()
+        Glide.with(imageView.context)
             .load(imageUrl)
-            .resize(getScreenWidth(), getScreenHeight())
+            .override(getScreenWidth(), getScreenHeight())
             .centerInside()
             .into(imageView)
     }

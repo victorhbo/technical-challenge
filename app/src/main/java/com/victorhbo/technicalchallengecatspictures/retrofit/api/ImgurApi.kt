@@ -9,13 +9,16 @@ import retrofit2.http.Headers
 import retrofit2.http.Query
 
 interface ImgurApi {
-    @Headers(Constants.HEADERS)
-    @GET(Constants.GET_PARAMETER)
-    suspend fun searchCats(@Query(Constants.QUERY) query: String): ImageResponse
+    @Headers(Constants.RETROFIT.HEADERS)
+    @GET(Constants.RETROFIT.GET_PARAMETER)
+    suspend fun searchCats(
+        @Query(Constants.RETROFIT.QUERY) query: String,
+        @Query(Constants.RETROFIT.QUERY_PAGE) page: Int
+    ): ImageResponse
 }
 
 object RetrofitInstance {
-    private const val BASE_URL = Constants.URL
+    private const val BASE_URL = Constants.RETROFIT.URL
     private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
