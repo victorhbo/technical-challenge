@@ -1,7 +1,7 @@
 package com.victorhbo.technicalchallengecatspictures.views
 
+import android.content.res.Resources
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -9,16 +9,15 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.squareup.picasso.Picasso
-import com.victorhbo.technicalchallengecatspictures.R
+import com.victorhbo.technicalchallengecatspictures.databinding.ActivityImageDetailBinding
+import com.victorhbo.technicalchallengecatspictures.utils.Constants
 
 class ImageDetailActivity : AppCompatActivity() {
-    private lateinit var btnBack: ImageView
-    private lateinit var imageView: ImageView
-    private lateinit var btnClose: Button
+
+    private lateinit var binding: ActivityImageDetailBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         initComponents()
         initToolBar()
         initListeners()
@@ -27,39 +26,51 @@ class ImageDetailActivity : AppCompatActivity() {
 
     private fun initComponents() {
         enableEdgeToEdge()
-        setContentView(R.layout.activity_image_detail)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.act_image_details)) { v, insets ->
+        binding = ActivityImageDetailBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.actImageDetails) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        imageView = findViewById(R.id.iv_details)
-        btnClose = findViewById(R.id.btnClose)
-        btnBack = findViewById(R.id.btnBack)
-
     }
 
     private fun initToolBar() {
-        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        val toolbar: Toolbar = binding.toolbar
         setSupportActionBar(toolbar)
     }
 
     private fun initListeners() {
-        btnClose.setOnClickListener {
+        binding.btnClose.setOnClickListener {
             finish()
         }
-        btnBack.setOnClickListener {
+        binding.btnBack.setOnClickListener {
             finish()
         }
     }
 
     private fun loadImage() {
-        val imageUrl = intent.getStringExtra("IMAGE_URL")
+        val imageUrl = intent.getStringExtra(Constants.EXTRAS_NAME)
+        binding.tvDetailNome.text = imageUrl.toString()
         if (imageUrl != null) {
-            Picasso.get()
-                .load(imageUrl)
-                .into(imageView)
+            adjustImageSize(binding.ivDetails, imageUrl)
         }
+    }
+
+    private fun adjustImageSize(imageView: ImageView, imageUrl: String) {
+        Picasso.get()
+            .load(imageUrl)
+            .resize(getScreenWidth(), getScreenHeight())
+            .centerInside()
+            .into(imageView)
+    }
+
+    private fun getScreenWidth(): Int {
+        return Resources.getSystem().displayMetrics.widthPixels
+    }
+
+    private fun getScreenHeight(): Int {
+        return Resources.getSystem().displayMetrics.heightPixels
     }
 }

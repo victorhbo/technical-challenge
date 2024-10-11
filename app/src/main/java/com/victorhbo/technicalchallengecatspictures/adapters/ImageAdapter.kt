@@ -6,34 +6,28 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import com.victorhbo.technicalchallengecatspictures.R
 import com.victorhbo.technicalchallengecatspictures.models.Image
+import com.victorhbo.technicalchallengecatspictures.utils.Constants
 import com.victorhbo.technicalchallengecatspictures.views.ImageDetailActivity
 
-class ImageAdapter(private val images: MutableList<Image>) : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
+class ImageAdapter : ListAdapter<Image, ImageAdapter.ImageViewHolder>(ImageDiffCallback()) {
 
     class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageView: ImageView = itemView.findViewById(R.id.imageView)
 
         fun bind(image: Image) {
-            Picasso.get().load(image.link).into(imageView, object : Callback {
-                override fun onSuccess() {
-                    Log.d("Picasso", "Imagem carregada com sucesso: ${image.link}")
-                }
+            Picasso.get().load(image.link).into(imageView)
 
-                override fun onError(e: Exception?) {
-                    Log.e("Picasso", "Erro ao carregar imagem: ${e?.printStackTrace()}")
-                }
-            })
-
-            // Configurar o clique na imagem
+            val context = itemView.context
             itemView.setOnClickListener {
-                val context = itemView.context
-                val intent = Intent(context, ImageDetailActivity::class.java)
-                intent.putExtra("IMAGE_URL", image.link)
+                val intent = Intent(context, ImageDetailActivity::class.java).apply {
+                    putExtra(Constants.EXTRAS_NAME, image.link)
+                }
                 context.startActivity(intent)
             }
         }
@@ -45,9 +39,17 @@ class ImageAdapter(private val images: MutableList<Image>) : RecyclerView.Adapte
     }
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
-        val image = images[position]
+        val image = getItem(position)
         holder.bind(image)
     }
 
-    override fun getItemCount() = images.size
+    class ImageDiffCallback : DiffUtil.ItemCallback<Image>() {
+        override fun areItemsTheSame(oldItem: Image, newItem: Image): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: Image, newItem: Image): Boolean {
+            return oldItem == newItem
+        }
+    }
 }

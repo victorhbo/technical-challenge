@@ -3,4 +3,7 @@
     <string name="reload_images">Reload images</string>
     <string name="wait">Wait...</string>
     <string name="close">Close</string>
+    <string name="error">Erro</string>
+    <string name="timeout_message">Tempo limite expirado. Clique no botão Reload imagens</string>
+    <string name="ok">OK</string>
 </resources>

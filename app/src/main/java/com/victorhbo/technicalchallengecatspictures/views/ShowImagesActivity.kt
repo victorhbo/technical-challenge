@@ -1,35 +1,26 @@
 package com.victorhbo.technicalchallengecatspictures.views
 
-import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.victorhbo.technicalchallengecatspictures.R
 import com.victorhbo.technicalchallengecatspictures.adapters.ImageAdapter
-import com.victorhbo.technicalchallengecatspictures.retrofit.RetrofitInstance
-import com.victorhbo.technicalchallengecatspictures.models.Image
+import com.victorhbo.technicalchallengecatspictures.databinding.ActivityShowImagesBinding
+import com.victorhbo.technicalchallengecatspictures.retrofit.viewmodels.ShowImagesViewModel
 import com.victorhbo.technicalchallengecatspictures.utils.ProgressDialog
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class ShowImagesActivity : AppCompatActivity() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: ImageAdapter
-    private lateinit var imageList: MutableList<Image>
-    private lateinit var btnReloadImages: Button
-    private lateinit var btnExit: ImageView
+    private val adapter = ImageAdapter()
+    private lateinit var binding: ActivityShowImagesBinding
+    private val viewModel: ShowImagesViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,21 +28,20 @@ class ShowImagesActivity : AppCompatActivity() {
         initToolBar()
         initListeners()
         initAdapter()
+        initObserver()
         initRecycler()
         fetchImages()
     }
 
     private fun initComponents() {
+        binding = ActivityShowImagesBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         this.enableEdgeToEdge()
-        setContentView(R.layout.activity_show_images)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.act_show_images)) { v: View, insets: WindowInsetsCompat ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        btnReloadImages = findViewById(R.id.btnReloadImages)
-        btnExit = findViewById(R.id.btnExit)
-        recyclerView = findViewById(R.id.recyclerView)
     }
 
     private fun initToolBar() {
@@ -60,62 +50,60 @@ class ShowImagesActivity : AppCompatActivity() {
     }
 
     private fun initListeners() {
-        btnReloadImages.setOnClickListener {
+        binding.btnReloadImages.setOnClickListener {
             enableDisableButton(false)
             fetchImages()
         }
 
-        btnExit.setOnClickListener {
-            finish()
+        binding.btnExit.setOnClickListener {
+            finishAffinity()
         }
     }
 
     private fun initAdapter() {
-        imageList = mutableListOf()
-        adapter = ImageAdapter(imageList)
+        binding.recyclerView.adapter = adapter
+
     }
 
-    private fun initRecycler() {
-        recyclerView.layoutManager = GridLayoutManager(this, 4)
-        recyclerView.adapter = adapter
-    }
+    private fun initObserver() {
+        viewModel.imageList.observe(this) { images ->
+            adapter.submitList(images)
+            ProgressDialog.dismiss()
+            enableDisableButton(true)
+        }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private fun fetchImages() {
-        ProgressDialog.show(this)
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = RetrofitInstance.api.searchCats("cats")
-                withContext(Dispatchers.Main) {
-                    imageList.clear()
-                    response.data.forEach { imageData ->
-                        if (imageData.images.isNotEmpty()) {
-                            imageData.images.forEach { image ->
-                                if (image.link.endsWith(".jpg") || image.link.endsWith(".png")) {
-                                    imageList.add(image)
-                                }
-                            }
-                        }
-                    }
-
-                    Log.d("Filtered Image Count", "Total images: ${imageList.size}")
-                    adapter.notifyDataSetChanged()
-                }
-
-            } catch (e: Exception) {
-                Log.e("API Error", "Erro desconhecido: ${e?.printStackTrace()}")
-            } finally {
-                withContext(Dispatchers.Main) {
-                    ProgressDialog.dismiss()
-                    enableDisableButton(true)
-                }
+        viewModel.timeoutOccurred.observe(this) { hasTimedOut ->
+            if (hasTimedOut) {
+                showTimeoutDialog()
+                ProgressDialog.dismiss()
+                enableDisableButton(true)
             }
         }
     }
 
+    private fun initRecycler() {
+        binding.recyclerView.layoutManager = GridLayoutManager(this, 4)
+        binding.recyclerView.adapter = adapter
+    }
+
+    private fun fetchImages() {
+        ProgressDialog.show(this)
+        viewModel.fetchImages()
+    }
+
+
     private fun enableDisableButton(isEnabled: Boolean, alpha: Float = if (isEnabled) 1.0f else 0.9f) {
-        btnReloadImages.isEnabled = isEnabled
-        btnReloadImages.alpha = alpha
+        binding.btnReloadImages.isEnabled = isEnabled
+        binding.btnReloadImages.alpha = alpha
+    }
+
+    private fun showTimeoutDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.error))
+            .setMessage(getString(R.string.timeout_message))
+            .setPositiveButton(getString(R.string.ok)) { dialog, _ -> dialog.dismiss() }
+            .setCancelable(false)
+            .show()
     }
 
 }
